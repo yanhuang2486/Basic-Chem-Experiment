@@ -1,0 +1,53 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn import linear_model
+
+#计算HAc的浓度
+C_NaOH=0.2015
+V_HAc=25.00
+V_NaOH_1=np.zeros(3)
+V_NaOH_2=np.array([30.39,30.55,30.95])
+V_NaOH=np.mean(V_NaOH_2-V_NaOH_1)
+C_0=V_NaOH*C_NaOH/V_HAc
+
+#标定的醋酸浓度
+C_0=0.2466
+
+#计算稀释过的醋酸浓度
+V_proportion=np.array([[5.00/100],[10.00/100],[25.00/100],[50.00/100],[100.00/100]])
+C_HAc=C_0*(V_proportion)
+lgC=np.log(C_HAc)
+
+#测定的pH并计算氢离子浓度
+pH=np.array([4.00,3.92,3.84,3.74,3.45])
+C_H=10**(-pH)
+
+#创建并训练模型
+model = linear_model.LinearRegression() 
+model.fit(lgC,2*pH) 
+
+#拟合的直线截距、斜率
+k=model.coef_[0]
+b=model.intercept_
+cof=(k,b)
+
+#调整做图参数
+plt.rcParams['font.sans-serif']=['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+plt.scatter(lgC,2*pH)
+plt.plot([])
+plt.title('lgc-2pH图像')
+plt.xlabel('lgc')
+plt.ylabel('2pH')
+plt.grid(True) 
+
+#绘制散点图
+plt.scatter(lgC,2*pH,color='r')
+
+#绘制拟合曲线图
+des="拟合线 y=%.2fx%+.2f"%tuple(cof)
+plt.plot([lgC[0],lgC[4]],model.predict([lgC[0],lgC[4]]),color='b',label=des)
+plt.legend()
+plt.tight_layout()
+plt.savefig('lgc-2pH图像')
+plt.show()
